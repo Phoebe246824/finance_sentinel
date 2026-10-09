@@ -1,0 +1,28 @@
+__pycache__/
+.pytest_cache/
+.venv/
+.vscode/
+.env
+config.yaml
+*.log
+.claude/
+.omo/
+.worktrees/
+
+# Generated presentation/report artifacts (kept out of version control)
+output/
+
+# Ignore Docker-related files
+volumes/
+docker-compose.override.yml
+
+# OS metadata
+.DS_Store
+
+# Frontend local/runtime artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+frontend/.npm-cache/

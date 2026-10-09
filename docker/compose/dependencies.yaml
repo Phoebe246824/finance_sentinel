@@ -1,0 +1,8 @@
+include:
+  - milvus.yaml
+  - neo4j.yaml
+  - ragflow.yaml
+
+networks:
+  devopsnetwork:
+    driver: bridge

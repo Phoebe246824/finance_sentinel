@@ -1,0 +1,24 @@
+ARG PYTHON_BASE_IMAGE=docker.m.daocloud.io/library/python:3.13-slim-bookworm
+
+FROM ${PYTHON_BASE_IMAGE}
+
+ARG UV_DEFAULT_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG UV_VERSION=0.11.16
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_DEFAULT_INDEX=${UV_DEFAULT_INDEX} \
+    UV_LINK_MODE=copy
+
+WORKDIR /app
+
+RUN python -m pip install --no-cache-dir --index-url "${UV_DEFAULT_INDEX}" "uv==${UV_VERSION}"
+
+COPY pyproject.toml uv.lock ./
+COPY src ./src
+
+RUN uv sync --no-dev --frozen
+
+EXPOSE 8080
+
+CMD ["uv", "run", "--no-dev", "uvicorn", "sentinel.dashboard:create_dashboard_app", "--factory", "--host", "0.0.0.0", "--port", "8080"]

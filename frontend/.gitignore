@@ -1,0 +1,14 @@
+node_modules
+node_modules/
+.DS_Store
+dist
+dist/
+dist-ssr
+*.local
+.cursorrules
+.env
+.env.*
+!.env.example
+.npm-cache/
+
+# Auto-generated files

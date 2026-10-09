@@ -1,0 +1,38 @@
+ARG NODE_BASE_IMAGE=docker.m.daocloud.io/library/node:20.19-bookworm-slim
+ARG NGINX_BASE_IMAGE=docker.m.daocloud.io/library/nginx:1.27-alpine
+
+FROM ${NODE_BASE_IMAGE} AS frontend-builder
+
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+    COREPACK_NPM_REGISTRY=${NPM_REGISTRY}
+ENV VITE_VERSION=0.1.0 \
+    VITE_PORT=3006 \
+    VITE_BASE_URL=/ \
+    VITE_ACCESS_MODE=frontend \
+    VITE_WITH_CREDENTIALS=false \
+    VITE_OPEN_ROUTE_INFO=false \
+    VITE_LOCK_ENCRYPT_KEY=s3cur3k3y4adpro \
+    VITE_API_URL=/ \
+    VITE_API_PROXY_URL=http://127.0.0.1:8080 \
+    VITE_DROP_CONSOLE=false
+
+WORKDIR /app/frontend
+
+RUN corepack enable \
+    && corepack prepare pnpm@10.17.1 --activate \
+    && pnpm config set registry ${NPM_REGISTRY}
+
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY frontend ./
+RUN pnpm build
+
+FROM ${NGINX_BASE_IMAGE}
+
+COPY docker/nginx/sentinel.conf /etc/nginx/conf.d/default.conf
+COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
+
+EXPOSE 80
