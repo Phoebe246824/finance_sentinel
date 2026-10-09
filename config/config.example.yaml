@@ -1,0 +1,66 @@
+# Sentinel structured non-secret configuration.
+#
+# Copy to config/config.yaml for local use. Keep secrets in .env:
+# NEO4J_PASSWORD, LLM_API_KEY, EMBEDDER_API_KEY,
+# RERANKER_API_KEY, MILVUS_TOKEN, RAGFLOW_API_KEY.
+
+neo4j:
+  uri: bolt://localhost:7687
+  user: neo4j
+  database: neo4j
+
+graphiti:
+  dry_run: false
+  episode_source: sentinel
+
+models:
+  llm:
+    # LiteLLM provider prefix used for non-Graphiti text and embedding calls.
+    # For OpenAI-compatible custom endpoints, keep this as "openai".
+    provider: openai
+    model: gpt-4o
+    base_url: https://api.openai.com/v1
+  embedder:
+    model: BAAI/bge-m3
+    api_base: https://api.siliconflow.cn/v1
+    dim: 1024
+  reranker:
+    model: BAAI/bge-reranker-v2-m3
+    base_url: https://api.siliconflow.cn/v1
+
+search:
+  num_results: 10
+  risk_num_results: 20
+  min_score: 0.0
+
+risk:
+  threshold: 0.7
+
+milvus:
+  uri: http://localhost:19530
+  # Collection name for all normalized input events.
+  input_events_collection: input_events
+  kv_ttl_days: 90
+  stash_semantic_top_k: 10
+  stash_rerank_min_score: 0.7
+  stash_rerank_enabled: true
+  batch_max_per_person: 20
+
+blacklist:
+  event_similarity_threshold: 0.6
+  person_min_hits: 1
+
+dashboard:
+  admin_user: admin
+
+ragflow:
+  enabled: false
+  base_url: http://127.0.0.1:9380
+  dataset_id:
+  dataset_ids:
+  top_k: 5
+  similarity_threshold: 0.2
+  vector_similarity_weight: 0.7
+  timeout_seconds: 15
+  max_context_chars: 4000
+  fail_open: true

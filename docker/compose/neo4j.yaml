@@ -1,0 +1,26 @@
+services:
+
+  neo4j:
+    container_name: neo4j
+    image: ${NEO4J_IMAGE:-docker.m.daocloud.io/library/neo4j:5.26.0}
+    restart: always
+    environment:
+      NEO4J_AUTH: neo4j/pa55w0rd
+    ports:
+      - "7474:7474"   # HTTP Browser UI
+      - "7687:7687"   # Bolt 协议（SDK 连接）
+    volumes:
+      - ./volumes/neo4j/logs:/logs
+      - ./volumes/neo4j/config:/config
+      - ./volumes/neo4j/data:/data
+      - ./volumes/neo4j/plugins:/plugins
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - cypher-shell -u neo4j -p pa55w0rd "RETURN 1" >/dev/null
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - devopsnetwork

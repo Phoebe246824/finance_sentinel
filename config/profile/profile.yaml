@@ -1,0 +1,186 @@
+id: generic
+display_name: Generic Event Analysis
+description: General-purpose event monitoring profile for public information, operations, and response planning.
+graph:
+  entities:
+    - name: Event
+      description: A notable occurrence, update, report, incident, announcement, or planned activity.
+      fields:
+        event_type: High-level event type or subject area.
+        status: Current known state of the event.
+        event_note: Short factual note about the event.
+    - name: Organization
+      description: A company, agency, institution, community group, or other organized body.
+      fields:
+        organization_type: Type or role of the organization.
+        jurisdiction: Geographic or operational scope when available.
+    - name: Person
+      description: An individual mentioned as an actor, source, representative, or affected party.
+      fields:
+        role: Person role in the event.
+        affiliation: Known affiliation when available.
+    - name: Location
+      description: A physical, administrative, or virtual location relevant to the event.
+      fields:
+        location_type: Site, city, region, facility, online space, or other location type.
+        region: Broader region when available.
+    - name: Topic
+      description: A theme, issue, program, claim, concern, or subject discussed in the event.
+      fields:
+        topic_area: General topic area.
+        stance: Reported position or concern when available.
+    - name: Product
+      description: A product, service, tool, platform, asset, or system referenced by the event.
+      fields:
+        product_type: General type of product or service.
+        operator: Responsible organization when available.
+  edges:
+    - name: Involves
+      description: Connects an event to a participant, object, topic, or affected entity.
+      fields:
+        role: How the target is involved.
+    - name: OccursAt
+      description: Connects an event to a relevant location.
+      fields:
+        timing: Reported timing or period when available.
+    - name: Affects
+      description: Connects an event to an impacted person, group, organization, product, or topic.
+      fields:
+        impact: Nature of the reported impact.
+    - name: Mentions
+      description: Connects an event or actor to a referenced topic, person, organization, or product.
+      fields:
+        context: Why the target was mentioned.
+    - name: Causes
+      description: Connects a source event, action, or condition to a resulting event or impact.
+      fields:
+        basis: Evidence for the causal relation.
+  edge_type_map:
+    - source: Event
+      target: Organization
+      edges:
+        - Involves
+        - Affects
+        - Mentions
+    - source: Event
+      target: Person
+      edges:
+        - Involves
+        - Affects
+        - Mentions
+    - source: Event
+      target: Location
+      edges:
+        - OccursAt
+        - Affects
+        - Mentions
+    - source: Event
+      target: Topic
+      edges:
+        - Involves
+        - Affects
+        - Mentions
+        - Causes
+    - source: Event
+      target: Product
+      edges:
+        - Involves
+        - Affects
+        - Mentions
+    - source: Organization
+      target: Organization
+      edges:
+        - Involves
+        - Affects
+        - Mentions
+    - source: Person
+      target: Organization
+      edges:
+        - Involves
+        - Mentions
+    - source: Topic
+      target: Topic
+      edges:
+        - Causes
+        - Mentions
+risk:
+  dimensions:
+    public_impact: Scale and seriousness of likely effects on people, services, assets, reputation, or trust.
+    credibility: Strength, consistency, and source quality of the available evidence.
+    urgency: Time sensitivity and need for immediate monitoring or response.
+    stakeholder_exposure: Importance and sensitivity of affected stakeholders, groups, or operations.
+    continuity: Potential for disruption, escalation, recurrence, or sustained operational impact.
+    history_context: Relevance of related historical events and patterns.
+    response_readiness: Clarity of available actions, owners, mitigations, and communication paths.
+classification:
+  default_event_type: information_event
+  summary_instruction: Summarize the event in one concise sentence, naming the main actor, issue, and observed impact when available.
+  categories:
+    public_notice:
+      display_name: Public Notice
+      keywords:
+        - notice
+        - advisory
+        - update
+        - announcement
+    operational_disruption:
+      display_name: Operational Disruption
+      keywords:
+        - outage
+        - delay
+        - interruption
+        - suspension
+    safety_concern:
+      display_name: Safety Concern
+      keywords:
+        - safety
+        - hazard
+        - injury
+        - warning
+    reputation_issue:
+      display_name: Reputation Issue
+      keywords:
+        - criticism
+        - complaint
+        - backlash
+        - controversy
+dashboard:
+  force_category: null
+  force_category_confidence: 1.0
+  analysis_target: General event impact, stakeholder exposure, response posture, and near-term outlook.
+prompts:
+  pipeline:
+    normalization: prompts/pipeline/normalization.md
+    graph_extraction: prompts/pipeline/graph_extraction.md
+    classification: prompts/pipeline/classification.md
+    risk_first: prompts/pipeline/risk_first.md
+    risk_second: prompts/pipeline/risk_second.md
+  dashboard:
+    general:
+      intent_analysis: prompts/dashboard/general/intent_analysis.md
+      trend_prediction: prompts/dashboard/general/trend_prediction.md
+    categories:
+      intl_politics:
+        intent_analysis: prompts/dashboard/intl_politics/intent_analysis.md
+        trend_prediction: prompts/dashboard/intl_politics/trend_prediction.md
+      tech:
+        intent_analysis: prompts/dashboard/tech/intent_analysis.md
+        trend_prediction: prompts/dashboard/tech/trend_prediction.md
+      economy:
+        intent_analysis: prompts/dashboard/economy/intent_analysis.md
+        trend_prediction: prompts/dashboard/economy/trend_prediction.md
+      society:
+        intent_analysis: prompts/dashboard/society/intent_analysis.md
+        trend_prediction: prompts/dashboard/society/trend_prediction.md
+      public_health:
+        intent_analysis: prompts/dashboard/public_health/intent_analysis.md
+        trend_prediction: prompts/dashboard/public_health/trend_prediction.md
+      public_safety:
+        intent_analysis: prompts/dashboard/public_safety/intent_analysis.md
+        trend_prediction: prompts/dashboard/public_safety/trend_prediction.md
+      energy:
+        intent_analysis: prompts/dashboard/energy/intent_analysis.md
+        trend_prediction: prompts/dashboard/energy/trend_prediction.md
+      finance:
+        intent_analysis: prompts/dashboard/finance/intent_analysis.md
+        trend_prediction: prompts/dashboard/finance/trend_prediction.md
