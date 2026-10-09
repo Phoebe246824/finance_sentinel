@@ -1,5 +1,30 @@
-Extract a concise knowledge graph from the event text.
+Extract a concise risk knowledge graph from the banking event text.
 
-Focus on factual entities, observable relationships, and evidence directly supported by the text. Prefer general event concepts such as events, organizations, people, locations, topics, products, impacts, actions, and causal links. Do not infer private facts or unstated motives.
+你正在为“端侧银行零售反欺诈与反洗钱预警助手”快速构建轻量知识图谱。
+目标是保留风控研判需要的最小事实：主体、资金流、设备异常、风险信号、相似模式。
 
 Use the configured entity and edge definitions as the schema. Keep properties short, factual, and suitable for later retrieval.
+
+实体抽取规则：
+1. 对所有【编号# 名称】必须逐一抽取，name 严格等于“名称”，id_number 严格等于“编号”。
+   例如【P105# 客户E】 -> name=客户E, id_number=P105。
+   不要输出“客户”“账户”这种短泛称替代完整名称；不要把编号写进 name。
+2. 实体分类按语义和上下文，不要只看编号前缀：
+   - 客户A、客户E、个体工商户F、投诉人、贷款申请人 -> Customer
+   - 涉诈账户、新收款账户、付款账户、收款账户、跑分账户、归集账户 -> Account
+   - 虚拟币平台、投资平台、外部支付通道、超市、雇主企业、反洗钱系统 -> Merchant
+   - 新设备、常用手机、境外IP、短信验证码、登录设备 -> Device
+   - 洗钱、分拆交易、涉诈、黑名单、虚拟币保证金、投诉相似、开户不足7天、验证码失败 -> RiskSignal
+   - 转账、入账、消费、出金、贷款申请、投诉、冻结复核等完整事件 -> RiskEvent
+3. 不要抽取单独的时间、地点、金额、交易备注、投诉话术为实体；这些信息写进属性或关系 fact。
+4. 只抽取原文明确出现或无歧义蕴含的实体，不要补全未出现的信息。
+
+关系抽取规则：
+1. 资金入账、转账、消费、归集、出金都统一使用 TransfersFunds。
+2. 设备/IP/验证码/异地登录统一用 UsesDevice。
+3. 黑名单、涉诈、洗钱、分拆、开户过短、贷款欺诈、投诉相似等风险命中统一用 TriggersSignal。
+4. 历史相似事件、相似投诉话术、相似规则案例统一用 MatchesPattern。
+5. 每条关系的 fact 用中文，保留金额、时间、备注、渠道、设备状态、开户时长、处置建议等关键证据，不要泛化：
+   好：客户E在2026年6月13日10:24尝试向涉诈账户转账98000元，备注为虚拟币保证金。
+   坏：客户进行了可疑交易。
+6. 为速度考虑，不要抽取低价值泛关系；每个事件优先保留 3-6 条最关键关系即可。

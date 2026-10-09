@@ -136,7 +136,8 @@ def test_repository_profile_declares_complete_prompt_catalog() -> None:
         profile = get_profile_config()
         templates = repository_prompt_templates(profile)
 
-        assert profile.dashboard.force_category is None
+        # finance 分支特意将看板固定到金融类目；通用分支保持 None。
+        assert profile.dashboard.force_category in (None, "finance")
         assert set(profile.prompts.dashboard.categories) == set(CATEGORY_IDS)
         assert set(templates) == set(EXPECTED_REPOSITORY_PROMPTS.values())
         for relative_path, logical_name in EXPECTED_REPOSITORY_PROMPTS.items():

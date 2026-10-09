@@ -476,6 +476,23 @@ httpx            # HTTP 客户端
 
 本项目用于研究与学习目的，按"现状"提供，不构成任何投资建议、风控决策依据或执法指引。将本工具用于真实数据时，请自行确保符合适用法律法规与合规要求。
 
+## 金融风控特化分支
+
+本分支（`finance`）是面向**银行零售反欺诈与反洗钱**场景的特化版本，在通用事件分析能力之上，通过 runtime profile 替换领域语义：
+
+- **图谱 schema**：`Customer / Account / Merchant / Device / RiskSignal / RiskEvent` 六类实体，`TransfersFunds / UsesDevice / TriggersSignal / MatchesPattern` 四类资金与风险关系；
+- **风险维度**：客户身份、交易行为、交易对手、金额与速率、设备地理、历史上下文、合规信号七维评估；
+- **事件分类**：拆分转账、可疑洗钱、涉诈转账、虚拟币风险、贷款欺诈、跑分归集等 12 类风控事件类型；
+- **看板提示词**：`dashboard/finance` 类目固定使用零售风控研判模板（资金/账户/合规链条、三路径概率评估）。
+
+激活方式：分支默认已激活（`config/profile/profile.yaml`）。如需切回通用事件分析版本：
+
+```bash
+cp config/profile/profile.generic.yaml config/profile/profile.yaml
+```
+
+黑名单演示数据（`scripts/blacklist_demo_cases.py` 的拆分转账、洗钱归集等案例）与 RAGFlow 检查脚本的反洗钱查询词在两个分支中通用。
+
 ## 贡献
 
 欢迎 Issue 与 Pull Request，流程与要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。

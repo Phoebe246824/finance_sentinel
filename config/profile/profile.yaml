@@ -1,153 +1,268 @@
-id: generic
-display_name: Generic Event Analysis
-description: General-purpose event monitoring profile for public information, operations, and response planning.
+# Bank retail risk specialization profile.
+#
+# This branch (`finance`) activates the finance retail-risk profile by default.
+# To switch back to the generic event-analysis profile:
+#   cp config/profile/profile.generic.yaml config/profile/profile.yaml
+
+id: finance-retail-risk
+display_name: Bank Retail Risk Analysis
+description: Retail-banking anti-fraud and anti-money-laundering analysis profile covering transactions, accounts, devices, counterparties, and compliance signals.
 graph:
   entities:
-    - name: Event
-      description: A notable occurrence, update, report, incident, announcement, or planned activity.
+    - name: RiskEvent
+      description: 银行零售风控、反欺诈或反洗钱事件，如转账、入账、消费、出金、贷款申请、投诉、冻结复核等完整事件。
       fields:
-        event_type: High-level event type or subject area.
-        status: Current known state of the event.
-        event_note: Short factual note about the event.
-    - name: Organization
-      description: A company, agency, institution, community group, or other organized body.
+        event_category: 事件类别，如 normal_transaction、fraud_transfer、aml_structuring、loan_fraud、device_geo_anomaly、complaint。
+        occurred_at: 事件发生时间，优先保留原文时间。
+        amount: 事件涉及金额，单位为人民币元。
+        currency: 币种，默认人民币时可填 CNY。
+        risk_level_hint: 原文明确给出的风险等级或处置紧急程度。
+        disposition: 已执行或建议的处置，如拦截、冻结、复核、暂存、回访。
+        evidence: 支撑该事件的关键证据摘要。
+    - name: Customer
+      description: 银行客户、申请人、投诉人、转账发起人等自然人或个体工商户主体。
       fields:
-        organization_type: Type or role of the organization.
-        jurisdiction: Geographic or operational scope when available.
-    - name: Person
-      description: An individual mentioned as an actor, source, representative, or affected party.
+        id_number: 显式编号，如 P105；来自【P105# 客户E】时必须填写 P105。
+        customer_role: 客户在事件中的角色，如付款方、收款方、投诉人、贷款申请人。
+        risk_profile: 客户风险画像，如黑名单命中、常驻城市、历史交易稳定、涉诈受害风险。
+        usual_city: 客户常驻城市或常用地点。
+        account_age_hint: 客户或其相关账户开户时长描述。
+    - name: Account
+      description: 银行账户、收款账户、新开户账户、涉诈账户、外部支付账户等资金载体。
       fields:
-        role: Person role in the event.
-        affiliation: Known affiliation when available.
-    - name: Location
-      description: A physical, administrative, or virtual location relevant to the event.
+        id_number: 显式编号，如 P305、A001；来自【编号# 名称】时必须填写。
+        account_role: 账户角色，如付款账户、收款账户、涉诈账户、跑分账户、归集账户。
+        account_status: 账户状态，如新开户、冻结、黑名单、可疑、正常。
+        opened_duration: 开户时长，如不足7天、不足24小时。
+        owner_hint: 原文明确给出的账户归属主体。
+    - name: Merchant
+      description: 企业、商户、平台、支付通道、雇主、银行系统等非个人主体。
       fields:
-        location_type: Site, city, region, facility, online space, or other location type.
-        region: Broader region when available.
-    - name: Topic
-      description: A theme, issue, program, claim, concern, or subject discussed in the event.
+        id_number: 显式编号，如 C301；来自【编号# 名称】时必须填写。
+        merchant_type: 主体类型，如雇主企业、超市、虚拟币平台、投资平台、外部支付通道、反洗钱系统。
+        risk_status: 商户风险状态，如涉诈、高投诉、正常、反洗钱关注。
+    - name: Device
+      description: 登录或交易设备、IP、验证码、设备指纹等端侧行为载体。
       fields:
-        topic_area: General topic area.
-        stance: Reported position or concern when available.
-    - name: Product
-      description: A product, service, tool, platform, asset, or system referenced by the event.
+        device_type: 设备类型，如常用手机、新设备、境外IP、设备指纹。
+        device_status: 设备状态，如首次登录、常用设备、异常设备。
+        login_city: 登录城市或 IP 所在地。
+        auth_signal: 认证信号，如短信验证码多次失败、回访无人接听。
+    - name: RiskSignal
+      description: 可解释风险信号、规则命中、风险关键词或模型线索。
       fields:
-        product_type: General type of product or service.
-        operator: Responsible organization when available.
+        signal_type: 信号类型，如 blacklist_hit、fraud_keyword、aml_rule、device_geo、velocity、complaint_similarity。
+        severity: 风险严重度，如 low、medium、high。
+        rule_id: 规则或案例编号，如 E-FIN-AML-001。
+        evidence: 命中证据或触发原因。
   edges:
-    - name: Involves
-      description: Connects an event to a participant, object, topic, or affected entity.
+    - name: TransfersFunds
+      description: 资金从一个客户、账户或商户流向另一个客户、账户或商户。
       fields:
-        role: How the target is involved.
-    - name: OccursAt
-      description: Connects an event to a relevant location.
+        amount: 金额，单位人民币元。
+        transaction_time: 交易发生时间。
+        remark: 交易备注。
+        channel: 交易渠道。
+        flow_type: 资金流类型，如转账、工资入账、消费、出金、归集。
+    - name: UsesDevice
+      description: 客户或交易使用某设备、IP 或认证信号。
       fields:
-        timing: Reported timing or period when available.
-    - name: Affects
-      description: Connects an event to an impacted person, group, organization, product, or topic.
+        device_status: 新设备、常用设备、境外IP、验证码失败等。
+        login_city: 登录地点。
+    - name: TriggersSignal
+      description: 事件、客户、账户、商户或交易触发某个风险信号。
       fields:
-        impact: Nature of the reported impact.
-    - name: Mentions
-      description: Connects an event or actor to a referenced topic, person, organization, or product.
+        trigger_reason: 触发原因。
+        severity: 风险严重度。
+    - name: MatchesPattern
+      description: 事件或交易匹配历史案例、规则、相似投诉或异常模式。
       fields:
-        context: Why the target was mentioned.
-    - name: Causes
-      description: Connects a source event, action, or condition to a resulting event or impact.
-      fields:
-        basis: Evidence for the causal relation.
+        pattern_name: 匹配模式名称。
+        similarity_score: 相似度分数，如原文明确给出。
   edge_type_map:
-    - source: Event
-      target: Organization
+    - source: Customer
+      target: Account
       edges:
-        - Involves
-        - Affects
-        - Mentions
-    - source: Event
-      target: Person
+        - TransfersFunds
+    - source: Customer
+      target: Merchant
       edges:
-        - Involves
-        - Affects
-        - Mentions
-    - source: Event
-      target: Location
+        - TransfersFunds
+    - source: Customer
+      target: Device
       edges:
-        - OccursAt
-        - Affects
-        - Mentions
-    - source: Event
-      target: Topic
+        - UsesDevice
+    - source: Customer
+      target: RiskSignal
       edges:
-        - Involves
-        - Affects
-        - Mentions
-        - Causes
-    - source: Event
-      target: Product
+        - TriggersSignal
+    - source: Account
+      target: Customer
       edges:
-        - Involves
-        - Affects
-        - Mentions
-    - source: Organization
-      target: Organization
+        - TransfersFunds
+    - source: Account
+      target: Account
       edges:
-        - Involves
-        - Affects
-        - Mentions
-    - source: Person
-      target: Organization
+        - TransfersFunds
+    - source: Account
+      target: Merchant
       edges:
-        - Involves
-        - Mentions
-    - source: Topic
-      target: Topic
+        - TransfersFunds
+    - source: Account
+      target: RiskSignal
       edges:
-        - Causes
-        - Mentions
+        - TriggersSignal
+    - source: Merchant
+      target: Account
+      edges:
+        - TransfersFunds
+    - source: Merchant
+      target: RiskSignal
+      edges:
+        - TriggersSignal
+        - MatchesPattern
+    - source: Device
+      target: RiskSignal
+      edges:
+        - TriggersSignal
+    - source: RiskEvent
+      target: Customer
+      edges:
+        - TriggersSignal
+        - MatchesPattern
+    - source: RiskEvent
+      target: Account
+      edges:
+        - TransfersFunds
+        - TriggersSignal
+    - source: RiskEvent
+      target: Merchant
+      edges:
+        - TransfersFunds
+        - TriggersSignal
+        - MatchesPattern
+    - source: RiskEvent
+      target: Device
+      edges:
+        - UsesDevice
+    - source: RiskEvent
+      target: RiskSignal
+      edges:
+        - TriggersSignal
+        - MatchesPattern
 risk:
   dimensions:
-    public_impact: Scale and seriousness of likely effects on people, services, assets, reputation, or trust.
-    credibility: Strength, consistency, and source quality of the available evidence.
-    urgency: Time sensitivity and need for immediate monitoring or response.
-    stakeholder_exposure: Importance and sensitivity of affected stakeholders, groups, or operations.
-    continuity: Potential for disruption, escalation, recurrence, or sustained operational impact.
-    history_context: Relevance of related historical events and patterns.
-    response_readiness: Clarity of available actions, owners, mitigations, and communication paths.
+    customer_identity: 客户身份与画像可信度：身份要素完整性、黑名单命中情况、开户时长与常驻信息的一致性。
+    transaction_behavior: 交易行为合理性：金额、频次、时间分布与客户正常习惯的偏离程度。
+    counterparty: 交易对手风险：收款方是否涉诈、涉赌、跑分或处于黑名单，账户关系网络是否异常。
+    amount_velocity: 金额与速率特征：大额、拆分、快进快出、短时归集等资金速率异常程度。
+    device_geo: 设备与地理位置异常：新设备、境外IP、异地登录、验证码异常等端侧信号。
+    history_context: 历史与上下文：相似历史案件、既往投诉、历史交易稳定性对当前研判的参考价值。
+    compliance_signal: 合规信号强度：反洗钱规则命中、制裁名单、KYC 完整性、可疑交易报送相关线索。
 classification:
-  default_event_type: information_event
-  summary_instruction: Summarize the event in one concise sentence, naming the main actor, issue, and observed impact when available.
+  default_event_type: normal_transaction
+  summary_instruction: 用一句话概括本条风控事件，点明主要主体、资金行为与最关键的风险信号。
   categories:
-    public_notice:
-      display_name: Public Notice
+    normal_transaction:
+      display_name: 正常交易
       keywords:
-        - notice
-        - advisory
-        - update
-        - announcement
-    operational_disruption:
-      display_name: Operational Disruption
+        - 交易
+        - 入账
+        - 工资
+        - 消费
+        - 正常
+    structuring_transfer:
+      display_name: 拆分转账
       keywords:
-        - outage
-        - delay
-        - interruption
-        - suspension
-    safety_concern:
-      display_name: Safety Concern
+        - 拆分
+        - 分散转入
+        - 多笔小额
+        - 接近限额
+        - 规避监测
+    aml_suspicious_activity:
+      display_name: 可疑洗钱活动
       keywords:
-        - safety
-        - hazard
-        - injury
-        - warning
-    reputation_issue:
-      display_name: Reputation Issue
+        - 洗钱
+        - 反洗钱
+        - 可疑交易
+        - 资金归集
+        - 报送
+    fraud_account_transfer:
+      display_name: 涉诈账户转账
       keywords:
-        - criticism
-        - complaint
-        - backlash
-        - controversy
+        - 涉诈
+        - 诈骗
+        - 受骗
+        - 紧急拦截
+        - 涉诈账户
+    crypto_related_risk:
+      display_name: 虚拟币相关风险
+      keywords:
+        - 虚拟币
+        - 加密货币
+        - 场外交易
+        - 保证金
+        - 出金
+    loan_fraud:
+      display_name: 贷款欺诈
+      keywords:
+        - 贷款
+        - 包装流水
+        - 信贷欺诈
+        - 骗贷
+        - 违约
+    device_geo_anomaly:
+      display_name: 设备地理异常
+      keywords:
+        - 新设备
+        - 境外IP
+        - 异地登录
+        - 验证码
+        - 设备指纹
+    mule_account_collection:
+      display_name: 跑分账户归集
+      keywords:
+        - 跑分
+        - 归集
+        - 分散转出
+        - 多账户
+        - 集中收款
+    chargeback_complaint:
+      display_name: 投诉与拒付
+      keywords:
+        - 投诉
+        - 拒付
+        - 回访
+        - 客户反馈
+        - 相似投诉
+    merchant_cashout:
+      display_name: 商户套现
+      keywords:
+        - 套现
+        - 商户
+        - 虚假交易
+        - 通道
+        - 变现
+    sanctions_kyc_risk:
+      display_name: 制裁与KYC风险
+      keywords:
+        - 制裁
+        - KYC
+        - KYB
+        - 尽调
+        - 受益人
+    financial_risk_event:
+      display_name: 综合金融风险事件
+      keywords:
+        - 风险事件
+        - 风控
+        - 预警
+        - 处置
+        - 复核
 dashboard:
-  force_category: null
+  force_category: finance
   force_category_confidence: 1.0
-  analysis_target: General event impact, stakeholder exposure, response posture, and near-term outlook.
+  analysis_target: 银行零售客户交易的反欺诈与反洗钱研判：资金路径、账户关系、设备与地理异常、合规信号和处置建议。
 prompts:
   pipeline:
     normalization: prompts/pipeline/normalization.md

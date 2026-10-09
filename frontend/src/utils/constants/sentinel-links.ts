@@ -1,4 +1,4 @@
-const REPOSITORY_BASE = 'https://github.com/HDAnzz/finance_sentinel'
+const REPOSITORY_BASE = 'https://github.com/Phoebe246824/finance_sentinel'
 
 export const SENTINEL_LINKS = {
   REPOSITORY: REPOSITORY_BASE,

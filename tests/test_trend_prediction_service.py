@@ -164,8 +164,8 @@ async def test_run_trend_prediction_selects_public_safety_profile_prompts(monkey
         ("energy", "能源结构影响分析", "能源转型加速"),
         (
             "finance",
-            "企业/发行人：[立场和态度]",
-            "路径A（影响收敛）：[概率]",
+            "客户/商户：[立场和态度]",
+            "路径A（风险收敛）：[概率]",
         ),
     ],
 )
